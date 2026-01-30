@@ -183,11 +183,7 @@ function ParserState() {
 				}
 			};
 
-			// Inherit previous objects material.
-			// Spec tells us that a declared material must be set to all objects until a new material is declared.
-			// If a usemtl declaration is encountered while this new object is being parsed, it will
-			// overwrite the inherited material. Exception being that there was already face declarations
-			// to the inherited material, then it will be preserved for proper MultiMaterial continuation.
+		
 
 			if ( previousMaterial && previousMaterial.name && typeof previousMaterial.clone === 'function' ) {
 

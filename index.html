@@ -1,286 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>HANDAXE - HTL02</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=EB+Garamond:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-   
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=EB+Garamond:wght@400;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="sidebar">
+
+    <!-- Header -->
+    <div class="header">
+      <a href="https://acheuleanlab.com" class="header-text">ACHEULEAN LAB</a>
+    </div>
 
 
-  
+    <!-- Main Card -->
+    <div id="control-window">
+      <div class="card-content">
+        <div class="title-centered">HANDAXE - HTL02</div>
+
+        <div class="description">
+          Speaker Playground: generate a quarter wavelength transmission line enclosure for any speaker driver.
+          Download, 3d print, &amp; assemble.
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Tuning Frequency -->
+        <div class="input-row">
+          <div class="label">Tuning Frequency</div>
+          <div class="value-container">
+            <div class="value-wrapper">
+              <input class="value-input" type="number" id="line-length-slider" value="100" data-original="100"></input>
+              <div class="underline"></div>
+            </div>
+            <div class="unit">Hz</div>
+          </div>
+        </div>
+
+
+        <!-- Speaker Diameter - Interactive -->
+        <div class="input-row">
+          <div class="label">Speaker Diameter</div>
+          <div class="value-container">
+            <div class="value-wrapper">
+              <input class="value-input" type="number" id="hole-size-slider" value="5" data-original="5"></input>
+              <div class="underline"></div>
+            </div>
+            <div class="unit">cm</div>
+          </div>
+        </div>
+
+        <button id="export-stl-btn">Export STL</button>
+      </div>
+    </div>
+
+    <!-- Expandable Sections -->
+    <div class="section def">
+      <div class="section-header">TRANSMISSION LINE</div>
+      <div class="section-content">
+        <div class="section-separator"></div>
+        <div class="section-text">
+          Transmission line (TL) speaker enclosures provide a more natural, full-bodied sound than typical sealed or
+          ported boxes. TL designs reduce resonance peaks and enhance bass performance by channeling rear driver
+          pressure through a long, damped pathway that filters out high frequencies while reinforcing low end power.
+        </div>
+      </div>
+    </div>
+
+
+    <div class="section def">
+      <div class="section-header">Tuning Frequency</div>
+      <div class="section-content">
+        <div class="section-separator"></div>
+        <div class="section-text">
+          The length of the transmission line correlates to the wavelength of a target frequency. Use the resonant
+          frequency of your speaker driver, or the point where the bass response starts to fall off.
+        </div>
+      </div>
+    </div>
+
+    <div class="section def">
+      <div class="section-header">Speaker Diameter</div>
+      <div class="section-content">
+        <div class="section-separator"></div>
+        <div class="section-text">
+          The diameter of the hole in the enclosure - the frame/flange of the speaker should mount to the front of the
+          tube. Add a few millimeters for clearance around the cone. </div>
+      </div>
+    </div>
+
+    <div class="section instructions ">
+      <div class="section-header">ASSEMBLY INSTRUCTIONS</div>
+      <div class="section-content">
+        <div class="section-separator"></div>
+        <div class="section-text">
+          Download includes two end caps and two enclosure sides. After 3D printing, drill hole in rear of enclosure to
+          pass speaker wire through. Assemble enclosure with hot glue and fill with damping material such as acoustic
+          foam, polyester wadding, or (ideally) long-fibre wool. Mount speaker to bottom opening, then attach end cap to
+          top and bottom.
+        </div>
+      </div>
+    </div>
+
+
+  </div>
 
 
 
 
-  </style>
-  </head>
-
-  <body>
-
-      
-
-              <div class="sidebar">
-                
-                <!-- Header -->
-                  <div class="header">
-                      <a href="https://acheuleanlab.com" class="header-text">ACHEULEAN LAB</a>
-                  </div>
-  
-
-                  <!-- Main Card - Input Section -->
-                  <div id="control-window">
-                    <div class="card-content">
-                          <div class="title-centered">HANDAXE - HTL02</div>
-                                <!-- <div id="link">Acheulean Lab</div>
-                    <div id="titletype">Acheulean Lab Handaxe 001</div>
-                    <hr> -->
-                          <div class="description">
-                              Speaker Playground: generate a quarter wavelength transmission line enclosure for any speaker driver.
-                              Download, 3d print, &amp; assemble.
-                          </div>
-  
-                          <div class="separator"></div>
-                          
-                          <!-- <input type="range" id="hole-size-slider" min="1.8" max="18" step="0.05" value="0.5"> -->
-                 
-                    
-      
-                          <!-- Tuning Frequency - Interactive -->
-                          <div class="input-row">
-                              <div class="label">Tuning Frequency</div>
-                              <div class="value-container">
-                                  <div class="value-wrapper">
-                                      <input class="value-input" type="number" id="line-length-slider" value="100" data-original="100"></input>
-                                      <div class="underline"></div>
-                                  </div>
-                                  <div class="unit">Hz</div>
-                              </div>
-                              <!-- <input type="number"  min="3" max="500" value="100"> -->
-
-                          </div>
-                          
-  
-                          <!-- Speaker Diameter - Interactive -->
-                          <div class="input-row">
-                              <div class="label">Speaker Diameter</div>
-                              <div class="value-container">
-                                  <div class="value-wrapper">
-                                     <input class="value-input" type="number" id="hole-size-slider" value="5" data-original="5"></input>
-                                      <div class="underline"></div>
-                                  </div>
-                                  <div class="unit">cm</div>
-                              </div>
-                          </div>
-  
-                          <button id="export-stl-btn">Export STL</button>
-                        </div>
-                  </div>
-  
-                  <!-- Expandable Sections -->
-                  <div class="section def">
-                      <div class="section-header">TRANSMISSION LINE</div>
-                      <div class="section-content">
-                          <div class="section-separator"></div>
-                          <div class="section-text">
-                              Transmission line (TL) speaker enclosures provide a more natural, full-bodied sound than typical sealed or ported boxes. TL designs reduce resonance peaks and enhance bass performance by channeling rear driver pressure through a long, damped pathway that filters out high frequencies while reinforcing low end power.
-                          </div>
-                      </div>
-                  </div>
 
 
-                  <div class="section def">
-                    <div class="section-header">Tuning Frequency</div>
-                    <div class="section-content">
-                        <div class="section-separator"></div>
-                        <div class="section-text">
-                          The length of the transmission line correlates to the wavelength of a target frequency. Use the resonant frequency of your speaker driver, or the point where the bass response starts to fall off.
-                                                </div>
-                    </div>
-                </div>
-
-                <div class="section def">
-                            <div class="section-header">Speaker Diameter</div>
-                            <div class="section-content">
-                                <div class="section-separator"></div>
-                                <div class="section-text">
-                                   The diameter of the hole in the enclosure - the frame/flange of the speaker should mount to the front of the tube. Add a few millimeters for clearance around the cone. </div>
-                            </div>
-                        </div>
-
-                        <div class="section instructions ">
-                          <div class="section-header">ASSEMBLY INSTRUCTIONS</div>
-                          <div class="section-content">
-                              <div class="section-separator"></div>
-                              <div class="section-text">
-                                Download includes two end caps and two enclosure sides. After 3D printing, drill hole in rear of enclosure to pass speaker wire through. Assemble enclosure with hot glue and fill with damping material such as acoustic foam, polyester wadding, or (ideally) long-fibre wool. Mount speaker to bottom opening, then attach end cap to top and bottom.
-                              </div>
-                          </div>
-                      </div>
-
-                  
-              </div>
-
-  
-   
-
-
-  
   <div id="canvas-wrapper"></div>
-<div id="instructions">
+  <div id="instructions">
     <div class="header1">Handaxe: Transmission Line Length <span id="length-display">85.75</span> cm </div>
-          <!-- <div class="about">
-          <div class="header1">?</div>
-        </div> -->
-
-  
-</div>
-
-<div class="bgfelx">
-<div class="header2" >
-
-  Turn over stones,
-  open drawers,
-  sift through
-  fragments,
-  decipher glyphs
-  in the concrete,
-  pick out faces
-  in the fire, greet the
-  names on the wall,
-  listen closely to
-  the groans
-  of weary timber,
-  ask how or when or
-  why this or that got
-  here or there or
-  nowhere to be found;
-  an awareness
-  of the everyday
-  is at the foundation
-  of a more
-  complete world.
-  When the mundane
-  is acknowledged
-  as extraordinary
-  the habitual
-  becomes novel.
-  Often, the most
-  engaging phenomena
-  are the inexplicable
-  and uncertain,
-  and sometimes
-  the most important
-  thing
-  is what
-  we have learned
-  to ignore.
-  
-</div>
-</div>
-
-<script type="module" src="./main.js"></script>
-
-<script>
-
-document.addEventListener('DOMContentLoaded', () => {
-  const lineLengthInput = document.getElementById('line-length-slider');
-  const holeSizeInput = document.getElementById('hole-size-slider');
-
-  if (lineLengthInput && !lineLengthInput.value) {
-    lineLengthInput.value = lineLengthInput.dataset.original || 100;
-  }
-
-  if (holeSizeInput && !holeSizeInput.value) {
-    holeSizeInput.value = holeSizeInput.dataset.original || 5;
-  }
-});
 
 
+  </div>
 
+  <div class="bgfelx">
+    <div class="header2">
 
-  // Handle editable values
-  document.querySelectorAll('.value-input').forEach(element => {
-      element.addEventListener('focus', function() {
-          this.classList.add('editing');
-      });
-      
-      element.addEventListener('blur', function() {
-          this.classList.remove('editing');
-          // Validate number input
-          const value = parseFloat(this.value);
-          if (isNaN(value)) {
-              this.value = this.dataset.original || '';
-          } else {
-              this.dataset.original = String(value);
-          }
-      });
-      
-      element.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') {
-              this.blur();
-          }
-          // Allow only numbers, backspace, delete
-          if (!/[0-9.]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-              e.preventDefault();
-          }
-      });
-  });
+      Turn over stones,
+      open drawers,
+      sift through
+      fragments,
+      decipher glyphs
+      in the concrete,
+      pick out faces
+      in the fire, greet the
+      names on the wall,
+      listen closely to
+      the groans
+      of weary timber,
+      ask how or when or
+      why this or that got
+      here or there or
+      nowhere to be found;
+      an awareness
+      of the everyday
+      is at the foundation
+      of a more
+      complete world.
+      When the mundane
+      is acknowledged
+      as extraordinary
+      the habitual
+      becomes novel.
+      Often, the most
+      engaging phenomena
+      are the inexplicable
+      and uncertain,
+      and sometimes
+      the most important
+      thing
+      is what
+      we have learned
+      to ignore.
 
+    </div>
+  </div>
 
+  <script type="module" src="./main.js"></script>
 
-//linelength return
+  <script>
 
-const input = document.getElementById('line-length-slider');
-const output = document.getElementById('length-display');
+    document.addEventListener('DOMContentLoaded', () => {
+      const lineLengthInput = document.getElementById('line-length-slider');
+      const holeSizeInput = document.getElementById('hole-size-slider');
 
-input.addEventListener('input', () => {
-const value = parseFloat(input.value);
-if (!isNaN(value)) {
-const result = 8575 / value;
-output.textContent = result.toFixed(2); // show with 2 decimals
-} else {
-output.textContent = '85.75';
-}
-});
+      if (lineLengthInput && !lineLengthInput.value) {
+        lineLengthInput.value = lineLengthInput.dataset.original || 100;
+      }
 
-</script>
-
-
-<script>
-// Mobile-specific layout adjustments
-document.addEventListener('DOMContentLoaded', () => {
-  const isMobile = window.matchMedia('(max-width: 480px)').matches;
-  if (!isMobile) return;
-
-  // Move the three .section.def blocks below the canvas
-  const sidebar = document.querySelector('.sidebar');
-  const canvasWrapper = document.getElementById('canvas-wrapper');
-  const sections = Array.from(sidebar.querySelectorAll('.section'));
-  if (canvasWrapper && sections.length) {
-    const container = document.createElement('div');
-    container.id = 'mobile-sections-container';
-    sections.forEach(section => container.appendChild(section));
-    // Insert after canvasWrapper
-    canvasWrapper.parentNode.insertBefore(container, canvasWrapper.nextSibling);
-  }
-
-  // Convert hover interaction to click toggle on mobile
-  const allSections = document.querySelectorAll('.section');
-  allSections.forEach(section => {
-    const header = section.querySelector('.section-header');
-    if (!header) return;
-    header.style.cursor = 'pointer';
-    header.addEventListener('click', () => {
-      section.classList.toggle('open');
+      if (holeSizeInput && !holeSizeInput.value) {
+        holeSizeInput.value = holeSizeInput.dataset.original || 5;
+      }
     });
-  });
-});
-</script>
+
+
+
+
+    // Handle editable values
+    document.querySelectorAll('.value-input').forEach(element => {
+      element.addEventListener('focus', function () {
+        this.classList.add('editing');
+      });
+
+      element.addEventListener('blur', function () {
+        this.classList.remove('editing');
+        // Validate number input
+        const value = parseFloat(this.value);
+        if (isNaN(value)) {
+          this.value = this.dataset.original || '';
+        } else {
+          this.dataset.original = String(value);
+        }
+      });
+
+      element.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          this.blur();
+        }
+        // Allow only numbers, backspace, delete
+        if (!/[0-9.]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          e.preventDefault();
+        }
+      });
+    });
+
+
+
+    //linelength return
+
+    const input = document.getElementById('line-length-slider');
+    const output = document.getElementById('length-display');
+
+    input.addEventListener('input', () => {
+      const value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        const result = 8575 / value;
+        output.textContent = result.toFixed(2); // show with 2 decimals
+      } else {
+        output.textContent = '85.75';
+      }
+    });
+
+  </script>
+
+
+  <script>
+    // Mobile-specific layout adjustments
+    document.addEventListener('DOMContentLoaded', () => {
+      const isMobile = window.matchMedia('(max-width: 480px)').matches;
+      if (!isMobile) return;
+
+      // Move the three .section.def blocks below the canvas
+      const sidebar = document.querySelector('.sidebar');
+      const canvasWrapper = document.getElementById('canvas-wrapper');
+      const sections = Array.from(sidebar.querySelectorAll('.section'));
+      if (canvasWrapper && sections.length) {
+        const container = document.createElement('div');
+        container.id = 'mobile-sections-container';
+        sections.forEach(section => container.appendChild(section));
+        // Insert after canvasWrapper
+        canvasWrapper.parentNode.insertBefore(container, canvasWrapper.nextSibling);
+      }
+
+      // Convert hover interaction to click toggle on mobile
+      const allSections = document.querySelectorAll('.section');
+      allSections.forEach(section => {
+        const header = section.querySelector('.section-header');
+        if (!header) return;
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => {
+          section.classList.toggle('open');
+        });
+      });
+    });
+  </script>
 </body>
-</html> 
+
+</html>

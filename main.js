@@ -1,9 +1,8 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
-import { STLExporter } from './STLExporter.js';
-import { OBJLoader } from './OBJLoader.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js";
+import { STLExporter } from "./STLExporter.js";
+import { OBJLoader } from "./OBJLoader.js";
 
 const scene = new THREE.Scene();
-// scene.background = new THREE.Color(0xeeedee); // Neutral gray background
 
 // Initial dimensions
 function getDimensions() {
@@ -15,20 +14,17 @@ function getDimensions() {
 const { width, height } = getDimensions();
 
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-camera.position.set(0, -.5, 5);
-camera.lookAt(0, -.5, 0);
+camera.position.set(0, -0.5, 5);
+camera.lookAt(0, -0.5, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(width, height);
-renderer.domElement.style.display = 'block';
-renderer.domElement.style.margin = 'auto';
-document.getElementById('canvas-wrapper').appendChild(renderer.domElement);
+renderer.domElement.style.display = "block";
+renderer.domElement.style.margin = "auto";
+document.getElementById("canvas-wrapper").appendChild(renderer.domElement);
 
-// Single shared OBJ loader for the lifetime of the app
 const objLoader = new OBJLoader();
-
-
 
 function handleResize() {
   const { width, height } = getDimensions();
@@ -36,32 +32,30 @@ function handleResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
 }
-window.addEventListener('resize', handleResize);
+window.addEventListener("resize", handleResize);
 handleResize();
 
-// ENVIRONMENT MAP CODE HERE:
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 const envTexture = pmremGenerator.fromScene(new THREE.Scene(), 0.04).texture;
 scene.environment = envTexture;
 
-// Enable shadows and tone mapping 
+// Enable shadows and tone mapping
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 // Back-compat across Three.js versions
-if ('outputColorSpace' in renderer) {
+if ("outputColorSpace" in renderer) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-} else if ('outputEncoding' in renderer) {
+} else if ("outputEncoding" in renderer) {
   renderer.outputEncoding = THREE.sRGBEncoding;
 }
 
-// Shared material for all tubes - defined early so it's available for initial creation //f64a00 c6ff01
 function createTubeMaterial() {
-  const saturatedColor = new THREE.Color('#FE5D00').convertSRGBToLinear();
+  const saturatedColor = new THREE.Color("#FE5D00").convertSRGBToLinear();
   saturatedColor.multiplyScalar(1.4);
 
-    return new THREE.MeshPhysicalMaterial({
+  return new THREE.MeshPhysicalMaterial({
     color: saturatedColor,
     metalness: 0.2,
     roughness: 0.75,
@@ -71,35 +65,25 @@ function createTubeMaterial() {
     iridescenceIOR: 1.3,
     sheenColor: new THREE.Color(0xffffff), // white sheen
     sheenRoughness: 0.35,
-    
-    side: THREE.DoubleSide
 
-
-    
+    side: THREE.DoubleSide,
   });
-
 }
 
-
-
 // Ground plane
-const groundMaterial = new THREE.ShadowMaterial({ color: 0xeeedee, opacity: 0.65 });
+const groundMaterial = new THREE.ShadowMaterial({
+  color: 0xeeedee,
+  opacity: 0.65,
+});
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(300, 300),
-  groundMaterial
+  groundMaterial,
 );
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-
-
-
-
 // --- Serpentine Curve functions and variables ---
-
-
-
 function createSerpentineCurve(lineLength, yOffset = 0, offset, bendRadius) {
   const points = [];
   // Top line
@@ -109,21 +93,33 @@ function createSerpentineCurve(lineLength, yOffset = 0, offset, bendRadius) {
   // Top arc (rightward curve down)
   for (let t = 0; t <= Math.PI; t += Math.PI / 32) {
     if (t === 0 || t === Math.PI) continue;
-    points.push(new THREE.Vector3(
-      lineLength / 2 + bendRadius * Math.sin(t),
-      offset + yOffset - bendRadius * (1 - Math.cos(t)),
-      0
-    ));
+    points.push(
+      new THREE.Vector3(
+        lineLength / 2 + bendRadius * Math.sin(t),
+        offset + yOffset - bendRadius * (1 - Math.cos(t)),
+        0,
+      ),
+    );
   }
 
   // Bottom line
-  points.push(new THREE.Vector3(lineLength / 2, offset + yOffset - 2 * bendRadius, 0));
-  points.push(new THREE.Vector3(-lineLength / 2, offset + yOffset - 2 * bendRadius, 0));
+  points.push(
+    new THREE.Vector3(lineLength / 2, offset + yOffset - 2 * bendRadius, 0),
+  );
+  points.push(
+    new THREE.Vector3(-lineLength / 2, offset + yOffset - 2 * bendRadius, 0),
+  );
 
   return new THREE.CatmullRomCurve3(points);
 }
 
-function createMiddleConnectingCurve(lineLength, yOffsetTop, yOffsetBottom, offset, bendRadius) {
+function createMiddleConnectingCurve(
+  lineLength,
+  yOffsetTop,
+  yOffsetBottom,
+  offset,
+  bendRadius,
+) {
   const x = offset - lineLength / 2;
   const y0 = offset + yOffsetTop - 2 * bendRadius;
   const y1 = offset + yOffsetBottom;
@@ -134,8 +130,17 @@ function createMiddleConnectingCurve(lineLength, yOffsetTop, yOffsetBottom, offs
   const start = new THREE.Vector3(x, y0, 0);
   const end = new THREE.Vector3(x, y1, 0);
 
-  const arcCurve = new THREE.ArcCurve(centerX, centerY, r, Math.PI / 2, 3 * Math.PI / 2, false);
-  const arcPoints = arcCurve.getPoints(32).map(p => new THREE.Vector3(p.x, p.y, 0));
+  const arcCurve = new THREE.ArcCurve(
+    centerX,
+    centerY,
+    r,
+    Math.PI / 2,
+    (3 * Math.PI) / 2,
+    false,
+  );
+  const arcPoints = arcCurve
+    .getPoints(32)
+    .map((p) => new THREE.Vector3(p.x, p.y, 0));
 
   const path = new THREE.CurvePath();
   path.add(new THREE.LineCurve3(start, arcPoints[0]));
@@ -147,8 +152,6 @@ function createMiddleConnectingCurve(lineLength, yOffsetTop, yOffsetBottom, offs
   return path;
 }
 
-
-
 function createLeftHalfCShape(outerSize, innerSize) {
   // Clamp dimensions to avoid degenerate geometry
   const minSize = 0.05;
@@ -159,12 +162,12 @@ function createLeftHalfCShape(outerSize, innerSize) {
   // Corner radius at the exterior
   const r = Math.max(outerSize / 4, minSize * 0.25);
   let innerRadius = Math.max(innerSize / 2, minSize * 0.25);
-  
+
   const shape = new THREE.Shape();
-  
+
   // Create a single continuous "C" shape path that includes the hole boundary
   // Start at the outer edge, go around the shape, then around the hole
-  
+
   // Start at bottom-left corner
   shape.moveTo(-s + r, -s);
   // Bottom edge to center
@@ -173,7 +176,7 @@ function createLeftHalfCShape(outerSize, innerSize) {
   shape.lineTo(0, -innerRadius);
   // Go around the left half of the hole (clockwise to create a cutout)
   // The hole is centered at (0,0), so we go from the split line around the left half
-  shape.absarc(0, 0, innerRadius, -Math.PI/2, Math.PI/2, true);
+  shape.absarc(0, 0, innerRadius, -Math.PI / 2, Math.PI / 2, true);
   // Continue up the split line
   shape.lineTo(0, s);
   // Top edge from center to left
@@ -184,7 +187,7 @@ function createLeftHalfCShape(outerSize, innerSize) {
   shape.absarc(-s + r, -s + r, r, Math.PI, 1.5 * Math.PI, false);
   // Close the path back to start
   shape.lineTo(-s + r, -s);
-  
+
   return shape;
 }
 
@@ -197,12 +200,11 @@ function createRightHalfCShape(outerSize, innerSize) {
   const s = outerSize / 2;
   const r = Math.max(outerSize / 4, minSize * 0.25);
   let innerRadius = Math.max(innerSize / 2, minSize * 0.25);
-  
+
   const shape = new THREE.Shape();
-  
-  // Create a single continuous "C" shape path that includes the hole boundary
-  // This is the mirror of the left half
-  
+
+  // Mirror of left half, starting at bottom-center
+
   // Start at bottom-center
   shape.moveTo(0, -s);
   // Bottom edge to right
@@ -217,10 +219,10 @@ function createRightHalfCShape(outerSize, innerSize) {
   shape.lineTo(0, innerRadius);
   // Go around the right half of the hole (clockwise to create a cutout)
   // The hole is centered at (0,0), so we go from the split line around the right half
-  shape.absarc(0, 0, innerRadius, Math.PI/2, 3*Math.PI/2, true);
+  shape.absarc(0, 0, innerRadius, Math.PI / 2, (3 * Math.PI) / 2, true);
   // Continue down the split line
   shape.lineTo(0, -s);
-  
+
   return shape;
 }
 
@@ -235,7 +237,7 @@ function createLeftHalfTube(curve, faceSize, holeSize, material) {
   };
   const tubeGeometry = new THREE.ExtrudeGeometry(leftShape, extrudeSettings);
   const tube = new THREE.Mesh(tubeGeometry, material);
-  tube.castShadow = true; 
+  tube.castShadow = true;
   return { tube };
 }
 
@@ -246,7 +248,7 @@ function createRightHalfTube(curve, faceSize, holeSize, material) {
     extrudePath: curve,
     capStart: false,
     capEnd: false,
-    bevelEnabled: false
+    bevelEnabled: false,
   };
   const tubeGeometry = new THREE.ExtrudeGeometry(rightShape, extrudeSettings);
   const tube = new THREE.Mesh(tubeGeometry, material);
@@ -254,11 +256,8 @@ function createRightHalfTube(curve, faceSize, holeSize, material) {
   return { tube };
 }
 
-
-
-const slider = document.getElementById('line-length-slider');
-// const faceSlider = document.getElementById('face-size-slider');
-const holeSlider = document.getElementById('hole-size-slider');
+const slider = document.getElementById("line-length-slider");
+const holeSlider = document.getElementById("hole-size-slider");
 
 let slidervalue = 100;
 if (slider) {
@@ -288,15 +287,18 @@ function getLineSegmentLength(hzlength, bendRadius) {
 
 function getshortSegmentLength(straightLineLength) {
   const linelen = straightLineLength / 4;
-  return shorty = linelen - arcLength; 
-
+  return (shorty = linelen - arcLength);
 }
-
 
 const group = new THREE.Group();
 scene.add(group);
 
-let tube1Left, tube1Right, tube2Left, tube2Right, middleTubeLeft, middleTubeRight;
+let tube1Left,
+  tube1Right,
+  tube2Left,
+  tube2Right,
+  middleTubeLeft,
+  middleTubeRight;
 let cap1, cap2;
 
 // Cache for cap template and tubes for disposal
@@ -309,16 +311,16 @@ function loadCapTemplate() {
   if (capLoadPromise) return capLoadPromise;
   capLoadPromise = new Promise((resolve, reject) => {
     objLoader.load(
-      './WiggleCode/TL_Cap.obj',
+      "./TL_Cap.obj",
       (obj) => {
         capTemplate = obj;
         resolve(capTemplate);
       },
       undefined,
       (err) => {
-        console.error('OBJ load error:', err);
+        console.error("OBJ load error:", err);
         reject(err);
-      }
+      },
     );
   });
   return capLoadPromise;
@@ -332,7 +334,9 @@ function detachCapsFromGroup() {
 function disposeMesh(mesh) {
   if (!mesh) return;
   if (mesh.geometry) mesh.geometry.dispose();
-  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const materials = Array.isArray(mesh.material)
+    ? mesh.material
+    : [mesh.material];
   materials.forEach((m) => m && m.dispose && m.dispose());
 }
 
@@ -396,7 +400,8 @@ function sanitizeParameters(rawHzLength, rawFaceSize, rawHoleSize) {
 
   if (!Number.isFinite(cleanHz) || cleanHz <= 0) cleanHz = 85.75;
   if (!Number.isFinite(cleanHole) || cleanHole <= 0) cleanHole = 0.5;
-  if (!Number.isFinite(cleanFace) || cleanFace <= 0) cleanFace = cleanHole * 1.4;
+  if (!Number.isFinite(cleanFace) || cleanFace <= 0)
+    cleanFace = cleanHole * 1.4;
 
   // Ensure face is larger than hole
   if (cleanFace <= cleanHole * 1.1) cleanFace = cleanHole * 1.4;
@@ -404,26 +409,25 @@ function sanitizeParameters(rawHzLength, rawFaceSize, rawHoleSize) {
   return { hz: cleanHz, face: cleanFace, hole: cleanHole };
 }
 
-
-
-
 function addSerpentineCopies(hzlength, faceSize, holeSize) {
   const { hz, face, hole } = sanitizeParameters(hzlength, faceSize, holeSize);
-  hzlength = hz; faceSize = face; holeSize = hole;
-  
+  hzlength = hz;
+  faceSize = face;
+  holeSize = hole;
+
   // Desired gap between the actual tube surfaces (not centerlines)
   const desiredSurfaceGap = 1;
-  
+
   // The bend radius needs to account for the tube thickness
   // Gap between centerlines = surface gap + tube thickness
   const bendRadius = (desiredSurfaceGap + faceSize) / 2;
-  
+
   const height = 2 * faceSize;
   const offset = 0; // Keep centered
-  
+
   // Vertical separation between S-curves also needs to account for tube thickness
-  const verticalGap = (2 * bendRadius) + desiredSurfaceGap + faceSize;
-  
+  const verticalGap = 2 * bendRadius + desiredSurfaceGap + faceSize;
+
   // Detach caps before disposing tubes so they don't reference disposed materials
   detachCapsFromGroup();
   // Remove previously created tubes only (keep caps alive)
@@ -433,9 +437,25 @@ function addSerpentineCopies(hzlength, faceSize, holeSize) {
   if (lineSegmentLength <= 0) return;
 
   // Create curves (same as before)
-  const curve1 = createSerpentineCurve(lineSegmentLength, verticalGap / 2, offset, bendRadius);
-  const curve2 = createSerpentineCurve(lineSegmentLength, -verticalGap / 2, offset, bendRadius);
-  const middleCurve = createMiddleConnectingCurve(lineSegmentLength, verticalGap / 2, -verticalGap / 2, offset, bendRadius);
+  const curve1 = createSerpentineCurve(
+    lineSegmentLength,
+    verticalGap / 2,
+    offset,
+    bendRadius,
+  );
+  const curve2 = createSerpentineCurve(
+    lineSegmentLength,
+    -verticalGap / 2,
+    offset,
+    bendRadius,
+  );
+  const middleCurve = createMiddleConnectingCurve(
+    lineSegmentLength,
+    verticalGap / 2,
+    -verticalGap / 2,
+    offset,
+    bendRadius,
+  );
 
   // Create shared material
   const tubeMaterial = createTubeMaterial();
@@ -444,17 +464,41 @@ function addSerpentineCopies(hzlength, faceSize, holeSize) {
     ensureCaps(lineSegmentLength, verticalGap, holeSize, tubeMaterial);
   } else {
     loadCapTemplate()
-      .then(() => ensureCaps(lineSegmentLength, verticalGap, holeSize, tubeMaterial))
-      .catch(() => {/* ignore load errors already logged */});
+      .then(() =>
+        ensureCaps(lineSegmentLength, verticalGap, holeSize, tubeMaterial),
+      )
+      .catch(() => {
+        /* ignore load errors already logged */
+      });
   }
-  
+
   // Create both left and right halves
   tube1Left = createLeftHalfTube(curve1, faceSize, holeSize, tubeMaterial).tube;
-  tube1Right = createRightHalfTube(curve1, faceSize, holeSize, tubeMaterial).tube;
+  tube1Right = createRightHalfTube(
+    curve1,
+    faceSize,
+    holeSize,
+    tubeMaterial,
+  ).tube;
   tube2Left = createLeftHalfTube(curve2, faceSize, holeSize, tubeMaterial).tube;
-  tube2Right = createRightHalfTube(curve2, faceSize, holeSize, tubeMaterial).tube;
-  middleTubeLeft = createLeftHalfTube(middleCurve, faceSize, holeSize, tubeMaterial).tube;
-  middleTubeRight = createRightHalfTube(middleCurve, faceSize, holeSize, tubeMaterial).tube;
+  tube2Right = createRightHalfTube(
+    curve2,
+    faceSize,
+    holeSize,
+    tubeMaterial,
+  ).tube;
+  middleTubeLeft = createLeftHalfTube(
+    middleCurve,
+    faceSize,
+    holeSize,
+    tubeMaterial,
+  ).tube;
+  middleTubeRight = createRightHalfTube(
+    middleCurve,
+    faceSize,
+    holeSize,
+    tubeMaterial,
+  ).tube;
 
   // Add both halves to the group
   group.add(tube1Left);
@@ -471,10 +515,10 @@ function addSerpentineCopies(hzlength, faceSize, holeSize) {
     tube2Left,
     tube2Right,
     middleTubeLeft,
-    middleTubeRight
+    middleTubeRight,
   );
 
-  const oldAxes = scene.getObjectByName('originAxes');
+  const oldAxes = scene.getObjectByName("originAxes");
   if (oldAxes) {
     scene.remove(oldAxes);
     oldAxes.traverse((child) => {
@@ -482,10 +526,10 @@ function addSerpentineCopies(hzlength, faceSize, holeSize) {
       if (child.material) child.material.dispose();
     });
   }
-  
+
   // Create new axes with updated positioning and tick scaling
   const newAxes = createOriginAxes(faceSize, hzlength);
-  newAxes.name = 'originAxes';
+  newAxes.name = "originAxes";
   scene.add(newAxes);
 }
 addSerpentineCopies(hzlength, faceSize, holeSize);
@@ -494,15 +538,13 @@ adjustCameraForScale(faceSize); // Add this line
 // Force an immediate update to apply the new material
 updateSerpentine(hzlength, faceSize, holeSize);
 
-
-
 // Studio lighting setup
 function createStudioLighting() {
   // Key light (main directional light from top-front-right)
   const keyLight = new THREE.DirectionalLight(0xffffff, 0.91);
   keyLight.position.set(6, 18, -10); // Move right and lower
   keyLight.castShadow = true;
-  keyLight.shadow.mapSize.width = 2048;  // Higher resolution for sharper shadows
+  keyLight.shadow.mapSize.width = 2048; // Higher resolution for sharper shadows
   keyLight.shadow.mapSize.height = 2048;
   keyLight.shadow.camera.near = 1;
   keyLight.shadow.camera.far = 400;
@@ -513,15 +555,13 @@ function createStudioLighting() {
   keyLight.shadow.radius = 12; // Increase blur
   scene.add(keyLight);
 
-  
-
   // Fill light (softer light from opposite side)
   const fillLight = new THREE.DirectionalLight(0xffffff, 0.74);
   fillLight.position.set(-10, 10, 5);
   scene.add(fillLight);
 
   // Rim light (back light for edge definition)
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.50);
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.5);
   rimLight.position.set(-5, 5, -15);
   scene.add(rimLight);
 
@@ -538,8 +578,6 @@ function createStudioLighting() {
 // Call the studio lighting setup
 createStudioLighting();
 
-
-
 // Enable shadows in renderer
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -547,78 +585,78 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // Create axes that scale with the object bounding box
 function createOriginAxes(faceSize, hzlength) {
   const axisGroup = new THREE.Group();
-  
+
   // Calculate object dimensions for positioning
   const desiredSurfaceGap = 1;
   const bendRadius = (desiredSurfaceGap + faceSize) / 2;
-  const verticalGap = (2 * bendRadius) + desiredSurfaceGap + faceSize;
+  const verticalGap = 2 * bendRadius + desiredSurfaceGap + faceSize;
   const lineSegmentLength = getLineSegmentLength(hzlength, bendRadius);
-  
+
   // Calculate actual object bounds based on curve positions
   const topCurveY = verticalGap / 2; // Top curve center
   const bottomCurveY = -verticalGap / 2; // Bottom curve center
   const curveDrop = 2 * bendRadius; // How much curves drop from their center
-  
+
   // Actual vertical bounds
-  const actualTopY = topCurveY + faceSize/2; // Top of top curve
-  const actualBottomY = bottomCurveY - curveDrop - faceSize/2; // Bottom of bottom curve
+  const actualTopY = topCurveY + faceSize / 2; // Top of top curve
+  const actualBottomY = bottomCurveY - curveDrop - faceSize / 2; // Bottom of bottom curve
   const actualHeight = actualTopY - actualBottomY;
-  
+
   // Horizontal bounds
-  const objectWidth = lineSegmentLength + (2 * bendRadius) + faceSize;
-  
+  const objectWidth = lineSegmentLength + 2 * bendRadius + faceSize;
+
   // Calculate object height (same as in addSerpentineCopies)
-  const objectHeight = verticalGap + (2 * bendRadius) + faceSize;
-  
+  const objectHeight = verticalGap + 2 * bendRadius + faceSize;
+
   // Set offset to exactly half the height of the serpentine curve
   const offset = objectHeight / 4;
-  
+
   // Calculate the center of the object
   const objectCenterX = 0; // Object is centered horizontally
   const objectCenterY = (actualTopY + actualBottomY) / 2;
-  
+
   // Calculate axis size to encompass the object plus the offset
-  let finalAxisSize = objectHeight + (offset * 2); // object height + offset on top and bottom
+  let finalAxisSize = objectHeight + offset * 2; // object height + offset on top and bottom
   // Make axis shorter by reducing the size
   finalAxisSize = finalAxisSize * 0.8; // Reduce to 80% of calculated size
-  
+
   // Position axes to form a square centered on the object
-  const axisStartX = objectCenterX - finalAxisSize/2;
-  const axisStartY = objectCenterY - finalAxisSize/2;
-  
+  const axisStartX = objectCenterX - finalAxisSize / 2;
+  const axisStartY = objectCenterY - finalAxisSize / 2;
+
   const darkerGrey = 0x4c4c4c;
   const lightGrey = 0xcccccc00;
-  
+
   // X-axis (horizontal line)
   const xAxisGeometry = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(axisStartX, axisStartY, 0),
-    new THREE.Vector3(axisStartX + finalAxisSize, axisStartY, 0)
+    new THREE.Vector3(axisStartX + finalAxisSize, axisStartY, 0),
   ]);
-  const xAxisMaterial = new THREE.LineBasicMaterial({ 
+  const xAxisMaterial = new THREE.LineBasicMaterial({
     color: darkerGrey,
     opacity: 0.7,
-    transparent: true
+    transparent: true,
   });
   const xAxis = new THREE.Line(xAxisGeometry, xAxisMaterial);
   axisGroup.add(xAxis);
-  
+
   // Y-axis (vertical line)
   const yAxisGeometry = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(axisStartX, axisStartY, 0),
-    new THREE.Vector3(axisStartX, axisStartY + finalAxisSize, 0)
+    new THREE.Vector3(axisStartX, axisStartY + finalAxisSize, 0),
   ]);
-  const yAxisMaterial = new THREE.LineBasicMaterial({ 
+  const yAxisMaterial = new THREE.LineBasicMaterial({
     color: darkerGrey,
     opacity: 0.7,
-    transparent: true
+    transparent: true,
   });
   const yAxis = new THREE.Line(yAxisGeometry, yAxisMaterial);
   axisGroup.add(yAxis);
-  
+
   // Calculate tick spacing based on axis size
   let tickInterval = 1;
   let majorInterval = 5;
-  
+
   // Adjust tick intervals based on axis size for readability
   if (finalAxisSize > 50) {
     tickInterval = 2;
@@ -630,53 +668,53 @@ function createOriginAxes(faceSize, hzlength) {
     tickInterval = 0.5;
     majorInterval = 2.5;
   }
-  
+
   // Dynamic tick length based on axis size
   const tickLength = finalAxisSize * 0.03; // 3% of axis size
-  
+
   // X-axis tick marks
   for (let i = tickInterval; i <= finalAxisSize; i += tickInterval) {
-    const isMajor = (i % majorInterval) < 0.01; // Account for floating point precision
-    const material = new THREE.LineBasicMaterial({ 
+    const isMajor = i % majorInterval < 0.01; // Account for floating point precision
+    const material = new THREE.LineBasicMaterial({
       color: isMajor ? darkerGrey : lightGrey,
       opacity: isMajor ? 0.7 : 0.4,
-      transparent: true
+      transparent: true,
     });
-    
+
     const tickGeometry = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(axisStartX + i, axisStartY, 0),
-      new THREE.Vector3(axisStartX + i, axisStartY - tickLength, 0)
+      new THREE.Vector3(axisStartX + i, axisStartY - tickLength, 0),
     ]);
-    
+
     const tick = new THREE.Line(tickGeometry, material);
     axisGroup.add(tick);
   }
-  
+
   // Y-axis tick marks
   for (let i = tickInterval; i <= finalAxisSize; i += tickInterval) {
-    const isMajor = (i % majorInterval) < 0.01; // Account for floating point precision
-    const material = new THREE.LineBasicMaterial({ 
+    const isMajor = i % majorInterval < 0.01; // Account for floating point precision
+    const material = new THREE.LineBasicMaterial({
       color: isMajor ? darkerGrey : lightGrey,
       opacity: isMajor ? 0.7 : 0.4,
-      transparent: true
+      transparent: true,
     });
-    
+
     const tickGeometry = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(axisStartX, axisStartY + i, 0),
-      new THREE.Vector3(axisStartX - tickLength, axisStartY + i, 0)
+      new THREE.Vector3(axisStartX - tickLength, axisStartY + i, 0),
     ]);
-    
+
     const tick = new THREE.Line(tickGeometry, material);
     axisGroup.add(tick);
   }
-  
+
   return axisGroup;
 }
 
 function getSerpentineBottomY(faceSize, hzlength) {
   const desiredSurfaceGap = 1;
   const bendRadius = (desiredSurfaceGap + faceSize) / 2;
-  const verticalGap = (2 * bendRadius) + desiredSurfaceGap + faceSize;
+  const verticalGap = 2 * bendRadius + desiredSurfaceGap + faceSize;
   const topCurveY = verticalGap / 2; // Top curve center
   const bottomCurveY = -verticalGap / 2; // Bottom curve center
   const curveDrop = 2 * bendRadius; // How much curves drop from their center
@@ -685,18 +723,17 @@ function getSerpentineBottomY(faceSize, hzlength) {
   return actualBottomY;
 }
 
-
-const exportBtn = document.getElementById('export-stl-btn');
+const exportBtn = document.getElementById("export-stl-btn");
 if (exportBtn) {
-  exportBtn.addEventListener('click', () => {
+  exportBtn.addEventListener("click", () => {
     const exporter = new STLExporter();
-    
+
     // Export left half
     const leftGroup = new THREE.Group();
     if (tube1Left) leftGroup.add(tube1Left.clone());
     if (tube2Left) leftGroup.add(tube2Left.clone());
     if (middleTubeLeft) leftGroup.add(middleTubeLeft.clone());
-    
+
     // Export right half
     const rightGroup = new THREE.Group();
     if (tube1Right) rightGroup.add(tube1Right.clone());
@@ -710,31 +747,35 @@ if (exportBtn) {
     // Export cap2 as a separate body
     const cap2Group = new THREE.Group();
     if (cap2) cap2Group.add(cap2.clone());
-    
+
     // ----------------- Export Functions -----------------
 
     // Left Half Export
     if (leftGroup.children.length > 0) {
       const leftStlData = exporter.parse(leftGroup, { binary: true });
-      const leftBlob = new Blob([leftStlData], { type: 'application/octet-stream' });
+      const leftBlob = new Blob([leftStlData], {
+        type: "application/octet-stream",
+      });
       const leftUrl = URL.createObjectURL(leftBlob);
-      const leftLink = document.createElement('a');
+      const leftLink = document.createElement("a");
       leftLink.href = leftUrl;
-      leftLink.download = 'handaxe_left_half.stl';
+      leftLink.download = "handaxe_left_half.stl";
       document.body.appendChild(leftLink);
       leftLink.click();
       document.body.removeChild(leftLink);
       URL.revokeObjectURL(leftUrl);
     }
-    
+
     // Right Half Export
     if (rightGroup.children.length > 0) {
       const rightStlData = exporter.parse(rightGroup, { binary: true });
-      const rightBlob = new Blob([rightStlData], { type: 'application/octet-stream' });
+      const rightBlob = new Blob([rightStlData], {
+        type: "application/octet-stream",
+      });
       const rightUrl = URL.createObjectURL(rightBlob);
-      const rightLink = document.createElement('a');
+      const rightLink = document.createElement("a");
       rightLink.href = rightUrl;
-      rightLink.download = 'handaxe_right_half.stl';
+      rightLink.download = "handaxe_right_half.stl";
       document.body.appendChild(rightLink);
       rightLink.click();
       document.body.removeChild(rightLink);
@@ -743,30 +784,34 @@ if (exportBtn) {
 
     // Cap 1 Export
     if (cap1Group.children.length > 0) {
-        const cap1StlData = exporter.parse(cap1Group, { binary: true });
-        const cap1Blob = new Blob([cap1StlData], { type: 'application/octet-stream' });
-        const cap1Url = URL.createObjectURL(cap1Blob);
-        const cap1Link = document.createElement('a');
-        cap1Link.href = cap1Url;
-        cap1Link.download = 'handaxe_cap1.stl';
-        document.body.appendChild(cap1Link);
-        cap1Link.click();
-        document.body.removeChild(cap1Link);
-        URL.revokeObjectURL(cap1Url);
+      const cap1StlData = exporter.parse(cap1Group, { binary: true });
+      const cap1Blob = new Blob([cap1StlData], {
+        type: "application/octet-stream",
+      });
+      const cap1Url = URL.createObjectURL(cap1Blob);
+      const cap1Link = document.createElement("a");
+      cap1Link.href = cap1Url;
+      cap1Link.download = "handaxe_cap1.stl";
+      document.body.appendChild(cap1Link);
+      cap1Link.click();
+      document.body.removeChild(cap1Link);
+      URL.revokeObjectURL(cap1Url);
     }
 
     // Cap 2 Export
     if (cap2Group.children.length > 0) {
-        const cap2StlData = exporter.parse(cap2Group, { binary: true });
-        const cap2Blob = new Blob([cap2StlData], { type: 'application/octet-stream' });
-        const cap2Url = URL.createObjectURL(cap2Blob);
-        const cap2Link = document.createElement('a');
-        cap2Link.href = cap2Url;
-        cap2Link.download = 'handaxe_cap2.stl';
-        document.body.appendChild(cap2Link);
-        cap2Link.click();
-        document.body.removeChild(cap2Link);
-        URL.revokeObjectURL(cap2Url);
+      const cap2StlData = exporter.parse(cap2Group, { binary: true });
+      const cap2Blob = new Blob([cap2StlData], {
+        type: "application/octet-stream",
+      });
+      const cap2Url = URL.createObjectURL(cap2Blob);
+      const cap2Link = document.createElement("a");
+      cap2Link.href = cap2Url;
+      cap2Link.download = "handaxe_cap2.stl";
+      document.body.appendChild(cap2Link);
+      cap2Link.click();
+      document.body.removeChild(cap2Link);
+      URL.revokeObjectURL(cap2Url);
     }
   });
 }
@@ -775,17 +820,17 @@ function adjustCameraForScale(faceSize) {
   // Calculate the approximate bounds of the object based on face size and bend radius
   const desiredSurfaceGap = 4;
   const bendRadius = (desiredSurfaceGap + faceSize) / 2;
-  const verticalGap = (2 * bendRadius) + desiredSurfaceGap + faceSize;
-  
+  const verticalGap = 2 * bendRadius + desiredSurfaceGap + faceSize;
+
   // Estimate the total object height and width
-  const objectHeight = verticalGap + (2 * bendRadius) + faceSize;
+  const objectHeight = verticalGap + 2 * bendRadius + faceSize;
   const objectWidth = Math.max(20, faceSize * 4); // Rough estimate based on line length
-  
+
   // Calculate camera distance to maintain consistent apparent size
   const maxDimension = Math.max(objectHeight, objectWidth);
   const baseCameraDistance = 14; // Your current camera distance
   const scaleFactor = maxDimension / 12; // Adjust this divisor to fine-tune
-  
+
   camera.position.setLength(baseCameraDistance * scaleFactor);
 }
 
@@ -794,22 +839,18 @@ function updateSerpentine(hzlength, faceSize, holeSize) {
   adjustCameraForScale(faceSize);
   // Set ground position
   const bottomY = getSerpentineBottomY(faceSize, hzlength);
-  ground.position.y = bottomY - 0.6*faceSize;
+  ground.position.y = bottomY - 0.6 * faceSize;
   renderer.render(scene, camera);
-  console.log('Slider value:', slidervalue, '→ hzlength:', hzlength);
+  console.log("Slider value:", slidervalue, "→ hzlength:", hzlength);
 }
 
 if (slider && holeSlider) {
-  slider.addEventListener('input', (e) => {
+  slider.addEventListener("input", (e) => {
     slidervalue = Number(e.target.value);
     hzlength = 8575 / slidervalue;
     updateSerpentine(hzlength, faceSize, holeSize);
   });
-  // faceSlider.addEventListener('input', (e) => {
-  //   faceSize = Number(e.target.value);
-  //   updateSerpentine(hzlength, faceSize, holeSize);
-  // });
-  holeSlider.addEventListener('input', (e) => {
+  holeSlider.addEventListener("input", (e) => {
     holeSize = Number(e.target.value);
     faceSize = holeSize * 1.4;
     updateSerpentine(hzlength, faceSize, holeSize);
@@ -817,7 +858,7 @@ if (slider && holeSlider) {
 }
 
 const clock = new THREE.Clock();
-const ROTATION_SPEED_RAD_PER_SEC = 0.6; // ~0.01 per frame at 60fps
+const ROTATION_SPEED_RAD_PER_SEC = 0.6; 
 
 function animate() {
   requestAnimationFrame(animate);
